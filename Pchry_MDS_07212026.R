@@ -52,7 +52,7 @@ pcy$samples$group <- group
 pcy$samples
 
 # =============================================================================
-# 4. Filter low-expression genes using filterByExpr
+# 3. Filter low-expression genes using filterByExpr
 # =============================================================================
 
 # Filter genes
@@ -61,7 +61,7 @@ summary(keep)
 pcy <- pcy[keep, , keep.lib.sizes = FALSE]
 
 # =============================================================================
-# 5. Library size and normalization diagnostics
+# 4. Library size and normalization diagnostics
 # =============================================================================
 
 pcy$samples$lib.size
@@ -88,7 +88,7 @@ abline(h = median(logcounts), col = "blue")
 title("Boxplots of logCPMs (normalised)")
 
 # =============================================================================
-# 6. MDS plot
+# 5. MDS plot
 # =============================================================================
 # NOTE: confirm the substrate-to-color/label mapping below matches your actual
 # groupName factor levels (check with `levels(group)`) before trusting the legend.
