@@ -95,30 +95,83 @@ title("Boxplots of logCPMs (normalised)")
 
 levels(group)
 
-col.cell <- c("blue", "green", "purple", "orange")[group]
+col.cell <- c("grey40", "#1B9E77", "#D95F02", "#E7298A")[group]
 data.frame(group = pcsampleinfo$groupName, col.cell)
 
 # ── Reusable plotting function so TIFF and PDF versions stay identical ────────
 draw_mds_plot <- function() {
   mdsplot <- plotMDS(pcy, col = col.cell, pch = 16)
-  legend("top", fill = c("blue", "green", "purple", "orange"),
-         legend = c("No substrate", "Cellulose", "Lowly-acetylated CA (GFCA)", "Highly-acetylated CA (SACA)"),
+  legend("top", fill = c("grey40", "#1B9E77", "#D95F02", "#E7298A"),
+         legend = c("No substrate", "Cellulose", "GF CA", "SA CA"),
          title = expression(bold("Substrate")))
   invisible(mdsplot)
 }
 
 # ── TIFF ────────────────────────────────────────────────────────────────────
-tiff(filename = file.path(BASE, "Figures/Pchry_MDS_07212026.tiff"),
+tiff("/Users/colleenahern/Documents/Pchry/Figures/Pchry_MDS_08232026.tiff",
      units = "in", width = 7, height = 7, res = 300)
 draw_mds_plot()
 dev.off()
 
 # ── PDF ─────────────────────────────────────────────────────────────────────
-pdf(file = file.path(BASE, "Figures/Pchry_MDS_07212026.pdf"),
+pdf("/Users/colleenahern/Documents/Pchry/Figures/Pchry_MDS_08232026.pdf",
     width = 7, height = 7)
 draw_mds_plot()
 dev.off()
 
-message("Done. MDS plot saved to:\n  ",
-        file.path(BASE, "Figures/Pchry_MDS_07212026.tiff"), "\n  ",
-        file.path(BASE, "Figures/Pchry_MDS_07212026.pdf"))
+
+
+
+
+# Build mds_plot_gg from the pcy
+# object already created above, matching your existing colors/labels.
+
+library(ggplot2)
+
+# ── Get MDS coordinates without plotting (plot = FALSE just returns the data) ──
+mds_data <- plotMDS(pcy, plot = FALSE)
+
+mds_df <- data.frame(
+  x = mds_data$x,
+  y = mds_data$y,
+  group = pcsampleinfo$groupName
+)
+
+# ── Match your existing group levels (check this matches `levels(group)` from your script) ──
+mds_df$group <- factor(mds_df$group, levels = levels(group))
+
+mds_plot_gg <- ggplot(mds_df, aes(x = x, y = y, color = group)) +
+  geom_point(size = 3) +
+  scale_color_manual(
+    values = c("grey40", "#1B9E77", "#D95F02", "#E7298A"),
+    labels = c("No substrate", "Cellulose", "GF CA", "SA CA")
+  ) +
+  labs(
+    x = paste0("Leading logFC dim 1 (", round(mds_data$var.explained[1] * 100), "%)"),
+    y = paste0("Leading logFC dim 2 (", round(mds_data$var.explained[2] * 100), "%)"),
+    color = "Substrate"
+  ) +
+  theme_classic(base_size = 12) +
+  theme(
+    text                  = element_text(size = 12),
+    axis.title            = element_text(size = 12),
+    axis.text             = element_text(size = 12),
+    legend.title          = element_text(size = 12, face = "bold"),
+    legend.text           = element_text(size = 12),
+    legend.key.size       = unit(0.4, "cm"),
+    legend.position       = c(0.5, 0.88),  # inset into the blank middle-top area — adjust if it overlaps points
+    legend.justification  = c(0.5, 0.5),
+    # legend.background     = element_rect(fill = "white", colour = "black", linewidth = 0.5),
+    legend.margin         = margin(5, 8, 5, 8),
+    panel.border          = element_rect(colour = "black", fill = NA, linewidth = 1),
+    axis.line             = element_blank(),
+    aspect.ratio          = 1,
+    plot.margin           = margin(5, 5, 5, 5)
+  )
+
+mds_plot_gg
+
+ggsave(plot = mds_plot_gg,
+       filename = file.path(FIG_DIR, paste0("Pchry_MDSgg_", DATE, ".pdf")),
+       width = 5, height = 5, units = "in", dpi = 300)
+å
