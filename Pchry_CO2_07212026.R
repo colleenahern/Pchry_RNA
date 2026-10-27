@@ -27,10 +27,10 @@ block_map <- list(
   Cellulose              = list(time = "Pchry_cellulose_time", avg = "Pchry_cellulose_AA_avg", std = "Pchry_cellulose_AA_std",
                                 gc_avg = "Pchry_cellulose_gC_avg", gc_std = "Pchry_cellulose_gC_std",
                                 rep_prefix = "Pchry_cellulose_", reps = c(2, 6)),
-  "Lowly-acetylated CA (GF CA)"  = list(time = "Pchry_cellulose_time", avg = "Pchry_GFCA_AA_avg", std = "Pchry_GFCA_AA_std",
+  "Lowly acetylated CA (GF CA)"  = list(time = "Pchry_cellulose_time", avg = "Pchry_GFCA_AA_avg", std = "Pchry_GFCA_AA_std",
                                 gc_avg = "Pchry_GFCA_gC_avg", gc_std = "Pchry_GFCA_gC_std",
                                 rep_prefix = "Pchry_GF_CA_", reps = c(6, 7, 8)),
-  "Highly-acetylated CA (SA CA)" = list(time = "Pchry_SACA_time", avg = "Pchry_SACA_AA_avg", std = "Pchry_SACA_AA_std",
+  "Highly acetylated CA (SA CA)" = list(time = "Pchry_SACA_time", avg = "Pchry_SACA_AA_avg", std = "Pchry_SACA_AA_std",
                                 gc_avg = "Pchry_SACA_gC_avg", gc_std = "Pchry_SACA_gC_std",
                                 rep_prefix = "Pchry_SA_CA_", reps = c(7, 8)),
   HDPE                   = list(time = "Pchry_HDPE_time", avg = "Pchry_HDPE_AA_avg", std = "Pchry_HDPE_AA_std",
@@ -84,8 +84,8 @@ extract_endpoint <- function(raw, cols, condition_name, metric = c("AA", "gC")) 
 # ── Shared color mapping (named, so colors stay tied to condition identity) ──
 condition_colors <- c(
   "Cellulose"              = "#1B9E77",
-  "Lowly-acetylated CA (GF CA)"    = "#D95F02",
-  "Highly-acetylated CA (SA CA)"   = "#E7298A",
+  "Lowly acetylated CA (GF CA)"    = "#D95F02",
+  "Highly acetylated CA (SA CA)"   = "#E7298A",
   "HDPE"                   = "#7570B3",
   "No substrate"           = "grey40"
 )
@@ -126,7 +126,7 @@ growth_plot <- ggplot(growth_df, aes(x = time, y = avg, color = condition)) +
 growth_plot
 
 growth_plot
-ggsave("/Users/colleenahern/Documents/Pchry/Figures/Pchry_growth_curve_07252026.pdf",
+ggsave("/Users/colleenahern/Documents/Pchry/Figures/Pchry_growth_curve_10262026.pdf",
        plot = growth_plot, width = 8, height = 6)
 
 
@@ -147,18 +147,18 @@ comparisons_list <- list(
 endpoint_df <- imap_dfr(block_map, ~ extract_endpoint(raw, .x, .y, metric = METRIC))
 
 endpoint_df$condition <- recode(endpoint_df$condition,
-                                "Lowly-acetylated CA (GF CA)" = "GF CA",
-                                "Highly-acetylated CA (SA CA)" = "SA CA"
+                                "Lowly acetylated CA (GF CA)" = "GF CA",
+                                "Highly acetylated CA (SA CA)" = "SA CA"
 )
 condition_levels <- recode(condition_levels,
-                           "Lowly-acetylated CA (GF CA)" = "GF CA",
-                           "Highly-acetylated CA (SA CA)" = "SA CA"
+                           "Lowly acetylated CA (GF CA)" = "GF CA",
+                           "Highly acetylated CA (SA CA)" = "SA CA"
 )
 endpoint_df$condition <- factor(endpoint_df$condition, levels = condition_levels)
 
 # rename condition_colors keys to match the short names
-names(condition_colors)[names(condition_colors) == "Lowly-acetylated CA (GF CA)"] <- "GF CA"
-names(condition_colors)[names(condition_colors) == "Highly-acetylated CA (SA CA)"] <- "SA CA"
+names(condition_colors)[names(condition_colors) == "Lowly acetylated CA (GF CA)"] <- "GF CA"
+names(condition_colors)[names(condition_colors) == "Highly acetylated CA (SA CA)"] <- "SA CA"
 
 bar_y_label <- if (METRIC == "AA") expression("Total CO"[2]*" (mL)") else expression("Total CO"[2]*" (gC)")
 
