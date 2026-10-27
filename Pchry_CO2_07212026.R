@@ -212,3 +212,5 @@ welch_pvals <- map_dfr(comparisons_list, run_ttest, var_equal = FALSE) %>%
   ))
 
 print(welch_pvals, n = Inf)
+
+
