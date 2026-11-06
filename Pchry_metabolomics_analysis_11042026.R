@@ -161,7 +161,8 @@ bioabio_hm <- pheatmap(
   border_color  = "black",
   breaks        = seq(-10, 10, length.out = 300),
   fontsize      = 12,
-  fontsize_col  = 12
+  fontsize_col  = 12,
+  angle_col     = "0"
 )
 
 bioabio_hm
@@ -253,4 +254,57 @@ popViewport()
 
 dev.off()
 
+# Make supplementary tables showing mz and retention time values for all significantly upregulated metabolites for the bio v bio and bio v abio comparisons
+library(tidyverse)
+
+FEAT_PATH <- "/Users/colleenahern/Downloads/Supernatants-ec58bb01006c49b28da858e504f6f135-aligned_features.csv"
+OUT_DIR   <- "/Users/colleenahern/Documents/Pchry/Metabolomics_analysis/Metaboanalyst_results"
+
+BIOBIO_DIR  <- "/Users/colleenahern/Documents/Pchry/Metabolomics_analysis/Metaboanalyst_results/11042026_analysis_biovbio_filt"
+BIOABIO_DIR <- "/Users/colleenahern/Documents/Pchry/Metabolomics_analysis/Metaboanalyst_results/11042026_analysis_biovabio_filt"
+
+# ---- Feature metadata: rowID -> m/z, RT ----
+feat_meta <- read_csv(FEAT_PATH, show_col_types = FALSE) %>%
+  dplyr::select(rowID  = `row ID`,
+                mz     = `row m/z`,
+                RT_min = `row retention time`) %>%
+  mutate(rowID = as.numeric(rowID))
+
+# ---- Read one comparison file ----
+read_comparison <- function(filepath) {
+  comparison <- basename(filepath) %>%
+    str_remove("_covariate_result_\\d+\\.csv$") %>%
+    str_remove("\\.csv$")
+  
+  read_csv(filepath, show_col_types = FALSE) %>%
+    dplyr::rename(Feature = 1) %>%
+    mutate(Comparison = comparison, .before = 1)
+}
+
+# ---- Stack, attach m/z and RT, keep only significant upregulated ----
+build_sig_table <- function(dir) {
+  list.files(dir, pattern = "\\.csv$", full.names = TRUE) %>%
+    purrr::map_dfr(read_comparison) %>%
+    dplyr::filter(adj.P.Val < 0.05, logFC > 0) %>%
+    mutate(rowID = as.numeric(str_extract(Feature, "(?<=^F_)\\d+"))) %>%
+    dplyr::left_join(feat_meta, by = "rowID") %>%
+    dplyr::arrange(Comparison, desc(logFC)) %>%
+    dplyr::select(Comparison, Feature, mz, RT_min, logFC, P.Value, adj.P.Val)
+}
+
+biobio_sig  <- build_sig_table(BIOBIO_DIR)
+bioabio_sig <- build_sig_table(BIOABIO_DIR)
+
+# ---- Checks ----
+nrow(biobio_sig)
+nrow(bioabio_sig)
+sum(is.na(biobio_sig$mz))    # should be 0
+sum(is.na(bioabio_sig$mz))   # should be 0
+table(biobio_sig$Comparison)
+table(bioabio_sig$Comparison)
+head(biobio_sig, 10)
+
+# ---- Write out ----
+write_csv(biobio_sig,  file.path(OUT_DIR, "biovbio_significant_11042026.csv"))
+write_csv(bioabio_sig, file.path(OUT_DIR, "biovabio_significant_11042026.csv"))
 message("Done.")
